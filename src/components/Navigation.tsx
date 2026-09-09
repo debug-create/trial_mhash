@@ -3,15 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, Stethoscope, Store, Layers, Activity } from 'lucide-react';
+import { ShieldAlert, User, Stethoscope, Store, Layers, Activity } from 'lucide-react';
 import { useVanishingDose } from '@/context/VanishingDoseContext';
 
 export function Navigation() {
   const pathname = usePathname();
   const { patients } = useVanishingDose();
 
-  const reviewCount = patients.filter((p) => p.clinicalState === 'NEEDS_REVIEW').length;
-  const gapCount = patients.filter((p) => p.clinicalState === 'COVERAGE_GAP').length;
+  const redCount = patients.filter((p) => p.riskStatus === 'RED').length;
+  const orangeCount = patients.filter((p) => p.riskStatus === 'ORANGE').length;
 
   const navItems = [
     {
@@ -24,21 +24,20 @@ export function Navigation() {
       name: 'Patient App',
       href: '/patient',
       icon: User,
-      badge: 'Active Telemetry',
+      badge: 'Active Patient',
     },
     {
       name: 'Doctor Command Center',
       href: '/doctor',
       icon: Stethoscope,
-      badge: `${reviewCount} Review Now`,
-      badgeColor: reviewCount > 0 ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-emerald-950 text-emerald-300 border border-emerald-800',
+      badge: `${redCount} High Risk`,
+      badgeColor: redCount > 0 ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white',
     },
     {
-      name: 'Pharmacy Network',
+      name: 'Pharmacy Portal',
       href: '/pharmacy',
       icon: Store,
-      badge: gapCount > 0 ? `${gapCount} Gap Alert` : 'Live Network',
-      badgeColor: gapCount > 0 ? 'bg-purple-950 text-purple-300 border border-purple-800' : undefined,
+      badge: 'Live Network',
     },
   ];
 
@@ -53,8 +52,8 @@ export function Navigation() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-xl tracking-tight text-white">VANISHING DOSE</span>
-              <span className="rounded-full bg-cyan-950 px-2.5 py-0.5 font-mono text-[10px] text-cyan-400 border border-cyan-800">
-                v2 SYSTEM
+              <span className="rounded-full bg-cyan-950 px-2 py-0.5 font-mono text-[10px] text-cyan-400 border border-cyan-800">
+                CLOSED-LOOP RECOVERY
               </span>
             </div>
             <p className="text-[11px] text-slate-400">Detect → Explain → Resolve → Verify</p>
@@ -71,7 +70,7 @@ export function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative flex items-center gap-2 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium transition-all ${
+                className={`relative flex items-center gap-2 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium transition-all ${
                   isActive
                     ? 'bg-slate-800 text-cyan-400 border border-slate-700 shadow-sm'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
@@ -81,7 +80,7 @@ export function Navigation() {
                 <span className="hidden md:inline">{item.name}</span>
                 {item.badge && (
                   <span
-                    className={`ml-1 rounded-full px-2 py-0.5 text-[10px] font-semibold font-mono ${
+                    className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
                       item.badgeColor || 'bg-slate-800 text-slate-300 border border-slate-700'
                     }`}
                   >

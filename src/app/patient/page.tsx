@@ -4,11 +4,10 @@ import React, { useState } from 'react';
 import { useVanishingDose } from '@/context/VanishingDoseContext';
 import { AccessRecoveryModal } from '@/components/AccessRecoveryModal';
 import { calculateDepletionInterruptionRisk } from '@/lib/accessRecoveryEngine';
-import { ClinicalStateBadge } from '@/components/ConfidenceBadge';
-import { Pill, Clock, AlertTriangle, ShieldAlert, CheckCircle2, ShoppingBag, ArrowRight, Activity, Calendar, Info, Radio } from 'lucide-react';
+import { Pill, Clock, AlertTriangle, ShieldAlert, CheckCircle2, ShoppingBag, ArrowRight, Activity, Calendar } from 'lucide-react';
 
 export default function PatientPage() {
-  const { patients, selectedPatientId, setSelectedPatientId } = useVanishingDose();
+  const { patients, selectedPatientId, setSelectedPatientId, triggerRecoveryAction } = useVanishingDose();
   const patient = patients.find((p) => p.id === selectedPatientId) || patients[0];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,13 +23,23 @@ export default function PatientPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-xl">
           <div>
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-cyan-950 px-2.5 py-0.5 text-xs font-semibold text-cyan-400 border border-cyan-800 font-mono">
-                PATIENT PASSIVE TELEMETRY PORTAL
+              <span className="rounded-full bg-cyan-950 px-2.5 py-0.5 text-xs font-semibold text-cyan-400 border border-cyan-800">
+                PATIENT RECOVERY PORTAL
               </span>
-              <ClinicalStateBadge state={patient.clinicalState} label={patient.actionLabel} />
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                  patient.riskStatus === 'RED'
+                    ? 'bg-rose-950 text-rose-400 border border-rose-800'
+                    : patient.riskStatus === 'ORANGE'
+                    ? 'bg-amber-950 text-amber-400 border border-amber-800'
+                    : 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+                }`}
+              >
+                STATUS: {patient.riskStatus}
+              </span>
             </div>
             <h1 className="mt-2 text-2xl font-extrabold text-white">{patient.name}</h1>
-            <p className="text-xs text-slate-400 font-mono">
+            <p className="text-xs text-slate-400">
               {patient.age} yrs • Condition: {patient.condition} • Refill Cycle: {patient.supply.lastRefillDate}
             </p>
           </div>
@@ -40,23 +49,15 @@ export default function PatientPage() {
             <select
               value={selectedPatientId}
               onChange={(e) => setSelectedPatientId(e.target.value)}
-              className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono"
+              className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             >
               {patients.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} ({p.actionLabel})
+                  {p.name} ({p.activeAttribution?.detectedCause.replace('_', ' ')})
                 </option>
               ))}
             </select>
           </div>
-        </div>
-
-        {/* Passive Signal Notice */}
-        <div className="rounded-xl border border-cyan-800/60 bg-cyan-950/30 p-3.5 px-4 text-xs text-cyan-200 flex items-center gap-2">
-          <Info className="w-4 h-4 text-cyan-400 shrink-0" />
-          <span>
-            <strong>Passive Telemetry Active:</strong> Detection never asks you anything. Surrounding background signals (pharmacy claims & wearable biometrics) are monitored passively.
-          </span>
         </div>
 
         {/* Depletion Interruption Alert Banner */}
@@ -90,7 +91,7 @@ export default function PatientPage() {
                 {isAccessFailure && (
                   <button
                     onClick={() => setIsModalOpen(true)}
-                    className="mt-2 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-rose-950/50 hover:from-amber-400 hover:to-rose-500 transition-all font-mono"
+                    className="mt-2 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-rose-950/50 hover:from-amber-400 hover:to-rose-500 transition-all"
                   >
                     <ShoppingBag className="h-4 w-4" />
                     Launch Access Recovery (4 Verified Local Pharmacies)
@@ -112,7 +113,7 @@ export default function PatientPage() {
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 space-y-2">
-            <span className="text-xs text-slate-400 block font-medium">Estimated Physical Stock</span>
+            <span className="text-xs text-slate-400 block font-medium">Estimated Remaining Stock</span>
             <div className="flex items-baseline gap-2">
               <span
                 className={`text-3xl font-extrabold font-mono ${
@@ -123,16 +124,16 @@ export default function PatientPage() {
               </span>
               <span className="text-xs text-slate-400">tablets remaining</span>
             </div>
-            <p className="text-[11px] text-slate-400 font-mono">Delivery lead time: {patient.supply.deliveryLeadTimeHours} hours</p>
+            <p className="text-[11px] text-slate-400">Refill lead time: {patient.supply.deliveryLeadTimeHours} hours</p>
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 space-y-2">
-            <span className="text-xs text-slate-400 block font-medium">Clinical State Label</span>
-            <div className="pt-1">
-              <ClinicalStateBadge state={patient.clinicalState} label={patient.actionLabel} />
-            </div>
-            <span className="text-[11px] text-slate-500 block font-mono">
-              Leverage Score: {patient.priorityLeverageScore}
+            <span className="text-xs text-slate-400 block font-medium">Forensic Status</span>
+            <h4 className="text-sm font-bold text-white">
+              {patient.activeAttribution?.detectedCause.replace('_', ' ')}
+            </h4>
+            <span className="inline-block rounded-md bg-cyan-950 px-2 py-0.5 font-mono text-[10px] text-cyan-300 border border-cyan-800">
+              Confidence: {patient.activeAttribution?.confidenceScore}%
             </span>
           </div>
         </div>
@@ -144,7 +145,7 @@ export default function PatientPage() {
               <Calendar className="h-5 w-5 text-cyan-400" />
               <h3 className="font-bold text-slate-100 text-base">Today&apos;s Execution Schedule</h3>
             </div>
-            <span className="text-xs font-mono text-slate-400">Passive Telemetry Stream</span>
+            <span className="text-xs font-mono text-slate-400">Real-time Dose Monitor</span>
           </div>
 
           <div className="space-y-3">
@@ -173,13 +174,13 @@ export default function PatientPage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-100 text-sm">{dose.medicationName}</h4>
-                    <p className="text-xs text-slate-400 font-mono">
-                      Scheduled: <span className="text-slate-200">{dose.scheduledTime}</span>
+                    <p className="text-xs text-slate-400">
+                      Scheduled: <span className="font-mono text-slate-200">{dose.scheduledTime}</span>
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-3 font-mono">
+                <div className="flex items-center justify-between sm:justify-end gap-3">
                   {dose.status === 'MISSED' && (
                     <span className="rounded-full bg-rose-500/10 px-3 py-1 text-xs font-bold text-rose-400 border border-rose-500/20">
                       ⚠️ Dose Unconfirmed
@@ -205,17 +206,17 @@ export default function PatientPage() {
             <div className="rounded-xl border border-cyan-800/80 bg-cyan-950/30 p-5 space-y-3">
               <div className="flex items-center gap-2 text-cyan-300 font-bold text-sm">
                 <ShieldAlert className="h-5 w-5 text-cyan-400" />
-                <span>Passive Forensics Output: Access Exhaustion Corroborated</span>
+                <span>Forensics Output: Access Failure Detected</span>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Rather than sending another generic reminder, Vanishing Dose identified physical stock depletion. Clinician follow-up recovery can be launched below.
+                Rather than sending another generic reminder, Vanishing Dose has identified that your medication supply is exhausted. Click below to launch verified nearby pharmacy recovery.
               </p>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-cyan-500 px-5 py-2.5 text-xs font-extrabold text-slate-950 shadow-lg shadow-cyan-500/20 hover:bg-cyan-400 transition-all font-mono"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-cyan-500 px-5 py-2.5 text-xs font-extrabold text-slate-950 shadow-lg shadow-cyan-500/20 hover:bg-cyan-400 transition-all"
               >
                 <ShoppingBag className="h-4 w-4" />
-                Launch Access Recovery (4 Verified Local Pharmacies)
+                Find Verified Local Stock (Price & Distance Comparison)
               </button>
             </div>
           )}

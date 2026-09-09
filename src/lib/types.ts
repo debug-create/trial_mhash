@@ -1,17 +1,3 @@
-export type ClinicalState =
-  | 'NORMAL'
-  | 'DRIFT'
-  | 'NEEDS_REVIEW'
-  | 'COVERAGE_GAP'
-  | 'RECOVERED';
-
-export type ActionLabel =
-  | 'STABLE'
-  | 'WATCH'
-  | 'REVIEW NOW'
-  | 'COVERAGE GAP'
-  | 'RECOVERED';
-
 export type FailureCause =
   | 'ACCESS_EXHAUSTION'
   | 'FORGETTING'
@@ -54,7 +40,7 @@ export interface DoseEvent {
   id: string;
   medicationName: string;
   dosage: string;
-  scheduledTime: string; // ISO string or human string
+  scheduledTime: string; // ISO string
   status: 'TAKEN' | 'MISSED' | 'PENDING' | 'RECOVERED';
   takenAt?: string;
 }
@@ -75,7 +61,6 @@ export interface RefillSignal {
   lastRefillDate: string;
   refillOverdueDays: number;
   expectedRunoutDate: string;
-  feedStaleHours?: number;
 }
 
 export interface WearableSignal {
@@ -83,7 +68,6 @@ export interface WearableSignal {
   activityLevelPercentile: number;
   timezoneChanged: boolean;
   restingHeartRateDelta: number;
-  isSensorOnline?: boolean;
 }
 
 export interface SymptomSignal {
@@ -98,52 +82,6 @@ export interface PatientSignals {
   refill: RefillSignal;
   wearable?: WearableSignal;
   symptoms?: SymptomSignal[];
-  labHistory?: {
-    eGFR?: number; // mL/min/1.73m2
-    serumCreatinine?: number; // mg/dL
-    lastTestedDate?: string;
-  };
-}
-
-export interface EvidenceItem {
-  id: string;
-  text: string;
-  source: string;
-  provenance: 'OBSERVED' | 'DERIVED' | 'INFERRED';
-  timestamp: string;
-}
-
-export interface LayerAShapFeature {
-  featureName: string;
-  description: string;
-  impactPercent: number; // e.g. +31% or -12%
-  direction: 'INCREASE_RISK' | 'DECREASE_RISK';
-}
-
-export interface LayerBCauseHypothesis {
-  causeName: FailureCause;
-  title: string;
-  assessment: 'PLAUSIBLE' | 'UNLIKELY' | 'HIGH_CERTAINTY';
-  supportingEvidence: EvidenceItem[];
-  contradictingEvidence: EvidenceItem[];
-  assessmentReason: string;
-}
-
-export interface DriftEpisode {
-  id: string;
-  title: string;
-  triggerSignal: string;
-  startTime: string;
-  clinicalState: ClinicalState;
-  persistenceScore: number; // 0 to 100
-  evidenceCompleteness: number; // 0 to 100
-  interventionOpportunity: number; // 0 to 100
-  priorityLeverageScore: number; // (persistence * completeness * opportunity) / 10000 -> 0 to 100
-  driftRiskPercent: number; // Layer A score
-  shapFeatures: LayerAShapFeature[]; // Layer A SHAP outputs
-  hypotheses: LayerBCauseHypothesis[]; // Layer B rule outputs
-  suggestedAction: 'PHARMACY_RECOVERY' | 'CONTEXTUAL_NUDGE' | 'DOCTOR_ESCALATION';
-  status: 'OPEN' | 'CLINICIAN_REVIEWED' | 'INTERVENTION_PENDING' | 'RESOLVED';
 }
 
 export interface ForensicsAttribution {
@@ -151,20 +89,13 @@ export interface ForensicsAttribution {
   patientName: string;
   medicationName: string;
   missedDoseTime: string;
-  clinicalState: ClinicalState;
-  actionLabel: ActionLabel;
-  detectedCause: FailureCause; // Top plausible hypothesis cause
+  detectedCause: FailureCause;
   confidenceScore: number; // 0 to 100
   confidenceLevel: ConfidenceLevel;
   patternType: PatternType;
-  driftRiskPercent: number; // Layer A output
-  shapFeatures: LayerAShapFeature[]; // Layer A outputs
-  hypotheses: LayerBCauseHypothesis[]; // Layer B outputs
-  activeEpisode: DriftEpisode;
-  evidence: EvidenceItem[];
+  evidence: string[];
   suggestedAction: 'PHARMACY_RECOVERY' | 'CONTEXTUAL_NUDGE' | 'DOCTOR_ESCALATION';
   adherenceTrend30Days: number[];
-  priorityLeverageScore: number;
 }
 
 export interface Pharmacy {
@@ -207,16 +138,13 @@ export interface Patient {
   name: string;
   age: number;
   condition: string;
-  activeCoMedications: string[];
-  knownAllergies: string[];
-  clinicalState: ClinicalState;
-  actionLabel: ActionLabel;
-  priorityLeverageScore: number;
+  activeCoMedications: string[]; // Current drugs patient is taking e.g. ["Metformin 500mg", "Atorvastatin 10mg"]
+  knownAllergies: string[]; // Known patient allergies e.g. ["Lactose Monohydrate", "Sulfa Drugs"]
+  riskStatus: 'RED' | 'ORANGE' | 'GREEN';
   supply: MedicationSupply;
   doses: DoseEvent[];
   signals: PatientSignals;
   activeAttribution?: ForensicsAttribution;
-  episodes: DriftEpisode[];
   verificationStatus: VerificationStatus;
   ashaEscalated?: boolean;
   activeReservation?: StockReservation;
