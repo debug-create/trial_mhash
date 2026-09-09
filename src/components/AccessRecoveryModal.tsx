@@ -5,7 +5,6 @@ import { useVanishingDose } from '@/context/VanishingDoseContext';
 import { rankPharmaciesForRecovery, generatePreFilledWhatsAppLink, evaluatePersonalizedAlternativeSafety } from '@/lib/accessRecoveryEngine';
 import { ConfidenceBadge } from './ConfidenceBadge';
 import { MapPin, Phone, MessageSquare, Truck, ShoppingBag, CheckCircle, AlertTriangle, X, ShieldAlert, Clock, Camera, Lock, Pill, ShieldCheck, ShieldX, Info } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 export function AccessRecoveryModal({
   patientId,
@@ -27,13 +26,21 @@ export function AccessRecoveryModal({
 
   if (!isOpen) return null;
 
-  const handleConfirmAcquired = () => {
+  const handleConfirmAcquired = async () => {
     setAcquiredConfirmed(true);
-    confetti({
-      particleCount: 120,
-      spread: 80,
-      origin: { y: 0.6 },
-    });
+
+    if (typeof window !== 'undefined') {
+      try {
+        const confetti = (await import('canvas-confetti')).default;
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: { y: 0.6 },
+        });
+      } catch (e) {
+        // Fallback gracefully if confetti fails
+      }
+    }
 
     const ph = pharmacies.find((p) => p.id === selectedPharmacyId);
     const pharmacyInfo = ph ? `${ph.name} (₹${ph.priceINR})` : 'Nearby Verified Pharmacy';
