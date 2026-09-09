@@ -2,6 +2,7 @@ import { Patient } from './types';
 import { analyzeExecutionForensics } from './forensicsEngine';
 
 export const INITIAL_PATIENTS: Patient[] = [
+  // Demo Anchor 1: Patient caught early with high priority leverage (Access Exhaustion)
   {
     id: 'p-101',
     name: 'Anvesha Sharma',
@@ -9,8 +10,11 @@ export const INITIAL_PATIENTS: Patient[] = [
     condition: 'Essential Hypertension',
     activeCoMedications: ['Metformin 500mg BD', 'Atorvastatin 10mg HS'],
     knownAllergies: ['Lactose Monohydrate', 'Sulfa Drugs'],
-    riskStatus: 'RED',
+    clinicalState: 'NEEDS_REVIEW',
+    actionLabel: 'REVIEW NOW',
+    priorityLeverageScore: 88,
     verificationStatus: 'PENDING',
+    episodes: [],
     supply: {
       medicationName: 'Amlodipine 5mg',
       dosage: '1 tablet daily',
@@ -62,29 +66,38 @@ export const INITIAL_PATIENTS: Patient[] = [
       },
       refill: {
         lastRefillDate: '2026-08-04',
-        refillOverdueDays: 2,
+        refillOverdueDays: 3,
         expectedRunoutDate: '2026-09-03',
+        feedStaleHours: 2,
       },
       wearable: {
         sleepDisruptionHours: 0.5,
         activityLevelPercentile: 85,
         timezoneChanged: false,
         restingHeartRateDelta: 2,
+        isSensorOnline: true,
+      },
+      labHistory: {
+        eGFR: 84,
+        serumCreatinine: 0.9,
+        lastTestedDate: '2026-07-15',
       },
     },
     recoveryHistory: [
       {
         timestamp: '08:00 AM',
-        action: 'Scheduled Dose Reminder Delivered',
-        result: 'No confirmation response within 15 min window',
+        action: 'Passive Telemetry Signal Extraction',
+        result: 'Identified physical stock depletion (0 units) & overdue refill claims feed',
       },
       {
         timestamp: '08:15 AM',
-        action: 'Execution Forensics Reasoning Engine Executed',
-        result: 'Identified Cause: ACCESS_EXHAUSTION (94% Confidence)',
+        action: 'Execution Forensics Synthesis Executed',
+        result: 'Layer A Risk: 76% · Layer B Cause: ACCESS_EXHAUSTION · Leverage Rank #1',
       },
     ],
   },
+
+  // Demo Anchor 2: Patient with Treatment Intolerance (Side Effect Avoidance)
   {
     id: 'p-102',
     name: 'Rahul Verma',
@@ -92,8 +105,11 @@ export const INITIAL_PATIENTS: Patient[] = [
     condition: 'Post-Op Bacterial Infection',
     activeCoMedications: ['Paracetamol 650mg PRN'],
     knownAllergies: ['Penicillin Derivatives'],
-    riskStatus: 'ORANGE',
+    clinicalState: 'NEEDS_REVIEW',
+    actionLabel: 'REVIEW NOW',
+    priorityLeverageScore: 74,
     verificationStatus: 'PENDING',
+    episodes: [],
     supply: {
       medicationName: 'Amoxicillin 500mg',
       dosage: '1 capsule TID',
@@ -139,28 +155,38 @@ export const INITIAL_PATIENTS: Patient[] = [
         lastRefillDate: '2026-09-02',
         refillOverdueDays: 0,
         expectedRunoutDate: '2026-09-08',
+        feedStaleHours: 1,
       },
       symptoms: [
         {
-          symptomName: 'Severe Acute Nausea & Epigastric Distress',
+          symptomName: 'Acute Epigastric Nausea & Distress',
           severity: 8,
           loggedHoursPostDose: 1.5,
         },
       ],
+      wearable: {
+        sleepDisruptionHours: 1.2,
+        activityLevelPercentile: 50,
+        timezoneChanged: false,
+        restingHeartRateDelta: 4,
+        isSensorOnline: true,
+      },
     },
     recoveryHistory: [
       {
         timestamp: '02:00 PM',
-        action: 'Dose Reminder Sent',
-        result: 'Dose unconfirmed',
+        action: 'Passive Telemetry Signal Logged',
+        result: 'Symptom check-in recorded severity 8/10 epigastric distress post-dose',
       },
       {
         timestamp: '02:15 PM',
-        action: 'Symptom Signal Evaluated',
-        result: 'Identified Cause: SIDE_EFFECT_AVOIDANCE (82% Confidence)',
+        action: 'Layer B Rule Hypothesis Engine Executed',
+        result: 'Layer B Assessment: SIDE_EFFECT_AVOIDANCE (Plausible) · Regimen review suggested',
       },
     ],
   },
+
+  // Patient 3: Routine Disruption (Travel / Circadian Drift)
   {
     id: 'p-103',
     name: 'Priya Patel',
@@ -168,8 +194,11 @@ export const INITIAL_PATIENTS: Patient[] = [
     condition: 'Bronchial Asthma',
     activeCoMedications: ['Montelukast 10mg HS'],
     knownAllergies: ['Aspirin', 'NSAIDs'],
-    riskStatus: 'ORANGE',
+    clinicalState: 'DRIFT',
+    actionLabel: 'WATCH',
+    priorityLeverageScore: 52,
     verificationStatus: 'PENDING',
+    episodes: [],
     supply: {
       medicationName: 'Budesonide 200mcg Inhaler',
       dosage: '2 puffs twice daily',
@@ -215,27 +244,26 @@ export const INITIAL_PATIENTS: Patient[] = [
         lastRefillDate: '2026-08-20',
         refillOverdueDays: 0,
         expectedRunoutDate: '2026-09-20',
+        feedStaleHours: 4,
       },
       wearable: {
         sleepDisruptionHours: 3.2,
         activityLevelPercentile: 45,
         timezoneChanged: true,
         restingHeartRateDelta: 6,
+        isSensorOnline: true,
       },
     },
     recoveryHistory: [
       {
-        timestamp: '09:00 AM',
-        action: 'Scheduled Inhaler Reminder',
-        result: 'Unconfirmed',
-      },
-      {
         timestamp: '09:20 AM',
-        action: 'Wearable Event Analysis',
-        result: 'Identified Cause: ROUTINE_DISRUPTION (74% Confidence - Travel Timezone Shift)',
+        action: 'Wearable Telemetry Shift Evaluated',
+        result: 'Travel timezone shift + 3.2h sleep degradation detected',
       },
     ],
   },
+
+  // Demo Anchor 3: Patient correctly NOT flagged (Spurious Anomaly / False Positive Avoided)
   {
     id: 'p-104',
     name: 'Amit Kumar',
@@ -243,8 +271,11 @@ export const INITIAL_PATIENTS: Patient[] = [
     condition: 'Hyperlipidemia',
     activeCoMedications: ['Enalapril 5mg'],
     knownAllergies: [],
-    riskStatus: 'GREEN',
+    clinicalState: 'NORMAL',
+    actionLabel: 'STABLE',
+    priorityLeverageScore: 12,
     verificationStatus: 'VERIFIED_SUCCESS',
+    episodes: [],
     supply: {
       medicationName: 'Atorvastatin 10mg',
       dosage: '1 tablet HS',
@@ -292,18 +323,109 @@ export const INITIAL_PATIENTS: Patient[] = [
         lastRefillDate: '2026-08-28',
         refillOverdueDays: 0,
         expectedRunoutDate: '2026-09-28',
+        feedStaleHours: 2,
+      },
+      wearable: {
+        sleepDisruptionHours: 0.3,
+        activityLevelPercentile: 90,
+        timezoneChanged: false,
+        restingHeartRateDelta: 0,
+        isSensorOnline: true,
       },
     },
     recoveryHistory: [
       {
         timestamp: '09:55 PM',
-        action: 'Dose Logged On-Time',
-        result: 'Adherence stable (100%)',
+        action: 'Routine Evaluation Completed',
+        result: 'Single unconfirmed reminder evaluated as benign non-persistent anomaly; system withheld false positive alert',
+      },
+    ],
+  },
+
+  // Patient 5: Coverage Gap (Missing / Stale Feeds — Silence ≠ Stability)
+  {
+    id: 'p-105',
+    name: 'Siddharth Rao',
+    age: 61,
+    condition: 'Type 2 Diabetes Mellitus',
+    activeCoMedications: ['Teneligliptin 20mg'],
+    knownAllergies: ['Gluten'],
+    clinicalState: 'COVERAGE_GAP',
+    actionLabel: 'COVERAGE GAP',
+    priorityLeverageScore: 25,
+    verificationStatus: 'PENDING',
+    episodes: [],
+    supply: {
+      medicationName: 'Metformin 500mg SR',
+      dosage: '1 tablet BD',
+      currentStock: 10,
+      dailyConsumption: 2,
+      lastRefillDate: '2026-07-20',
+      expectedDepletionDate: '2026-08-20',
+      deliveryLeadTimeHours: 8,
+      brandName: 'Glycomet 500',
+      genericName: 'Metformin Hydrochloride',
+    },
+    doses: [
+      {
+        id: 'd-50',
+        medicationName: 'Metformin 500mg SR',
+        dosage: '1 tablet',
+        scheduledTime: '08:00 PM Yesterday',
+        status: 'MISSED',
+      },
+    ],
+    signals: {
+      doseEvents: [
+        {
+          id: 'd-50',
+          medicationName: 'Metformin 500mg SR',
+          dosage: '1 tablet',
+          scheduledTime: '08:00 PM Yesterday',
+          status: 'MISSED',
+        },
+      ],
+      supply: {
+        medicationName: 'Metformin 500mg SR',
+        dosage: '1 tablet BD',
+        currentStock: 10,
+        dailyConsumption: 2,
+        lastRefillDate: '2026-07-20',
+        expectedDepletionDate: '2026-08-20',
+        deliveryLeadTimeHours: 8,
+        brandName: 'Glycomet 500',
+        genericName: 'Metformin Hydrochloride',
+      },
+      refill: {
+        lastRefillDate: '2026-07-20',
+        refillOverdueDays: 14,
+        expectedRunoutDate: '2026-08-20',
+        feedStaleHours: 72, // Stale feed > 24h
+      },
+      wearable: {
+        sleepDisruptionHours: 0,
+        activityLevelPercentile: 0,
+        timezoneChanged: false,
+        restingHeartRateDelta: 0,
+        isSensorOnline: false, // Disconnected sensor
+      },
+    },
+    recoveryHistory: [
+      {
+        timestamp: '10:00 AM',
+        action: 'Evidence Stream Staleness Protocol Executed',
+        result: 'PBM feed stale (>72h) & wearable offline. System abstained from risk score & set explicit COVERAGE GAP state.',
       },
     ],
   },
 ];
 
+// Initialize forensics attributions for each patient
 INITIAL_PATIENTS.forEach((p) => {
-  p.activeAttribution = analyzeExecutionForensics(p.id, p.name, p.signals);
+  const attrib = analyzeExecutionForensics(p.id, p.name, p.signals);
+  p.activeAttribution = attrib;
+  p.clinicalState = attrib.clinicalState;
+  p.actionLabel = attrib.actionLabel;
+  p.priorityLeverageScore = attrib.priorityLeverageScore;
+  p.episodes = [attrib.activeEpisode];
 });

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useVanishingDose } from '@/context/VanishingDoseContext';
 import { rankPharmaciesForRecovery, generatePreFilledWhatsAppLink, evaluatePersonalizedAlternativeSafety } from '@/lib/accessRecoveryEngine';
 import { ConfidenceBadge } from './ConfidenceBadge';
-import { MapPin, Phone, MessageSquare, Truck, ShoppingBag, CheckCircle, AlertTriangle, X, ShieldAlert, Clock, Camera, Lock, Pill, ShieldCheck, ShieldX } from 'lucide-react';
+import { MapPin, Phone, MessageSquare, Truck, ShoppingBag, CheckCircle, AlertTriangle, X, ShieldAlert, Clock, Camera, Lock, Pill, ShieldCheck, ShieldX, Info } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export function AccessRecoveryModal({
@@ -24,7 +24,6 @@ export function AccessRecoveryModal({
   const [acquiredConfirmed, setAcquiredConfirmed] = useState(false);
   const [isReserving, setIsReserving] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
-  const [selectedAlternativeId, setSelectedAlternativeId] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -43,7 +42,7 @@ export function AccessRecoveryModal({
       triggerRecoveryAction(
         patientId,
         'VERIFIED_SUCCESS',
-        `Medication acquired via ${pharmacyInfo}. Personalized alternative safety check passed. Inventory restored +30 doses. Adherence execution verified.`
+        `Medication acquired via ${pharmacyInfo}. Inventory restored +30 doses. Adherence execution verified.`
       );
       setAcquiredConfirmed(false);
       setShowScanner(false);
@@ -76,9 +75,9 @@ export function AccessRecoveryModal({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-white">Medication Access Recovery Loop</h3>
-                <span className="rounded-md bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-400 border border-amber-500/20">
-                  Cause: Access Failure
+                <h3 className="font-bold text-lg text-white">Clinician-Initiated Access Recovery Loop</h3>
+                <span className="rounded-md bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-400 border border-amber-500/20 font-mono">
+                  FOLLOW-UP PHASE
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -94,13 +93,21 @@ export function AccessRecoveryModal({
           </button>
         </div>
 
+        {/* Passive Signals Rule Banner */}
+        <div className="bg-slate-950 p-3 px-6 border-b border-slate-800 flex items-center gap-2 text-xs text-slate-400">
+          <Info className="w-4 h-4 text-cyan-400 shrink-0" />
+          <span>
+            <strong>Architectural Note:</strong> Detection phase used passive telemetry only (zero patient interaction). This workflow is clinician-requested follow-up evidence gathering.
+          </span>
+        </div>
+
         {/* Patient Personalized Safety Profile Summary */}
         <div className="bg-slate-950 p-3.5 px-6 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-cyan-400" />
             <span className="font-bold text-slate-200">Personalized Medical Context:</span>
           </div>
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex items-center gap-4 text-[11px] font-mono">
             <span>
               Active Co-Meds: <strong className="text-cyan-300">{patient.activeCoMedications.join(', ') || 'None'}</strong>
             </span>
@@ -111,7 +118,7 @@ export function AccessRecoveryModal({
         </div>
 
         {/* Pharmacy List */}
-        <div className="max-h-[50vh] overflow-y-auto p-6 space-y-4">
+        <div className="max-h-[45vh] overflow-y-auto p-6 space-y-4">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
             Verified Local Availability & Personalized Substitute Safety ({rankedPharmacies.length} Stores)
           </h4>
@@ -144,7 +151,7 @@ export function AccessRecoveryModal({
                         {ph.address}
                       </span>
                       <span>•</span>
-                      <span className="flex items-center gap-1 text-slate-300">
+                      <span className="flex items-center gap-1 text-slate-300 font-mono">
                         <Clock className="h-3.5 w-3.5 text-cyan-400" />
                         {ph.storeHours} ({ph.transitDelayMins}m transit)
                       </span>
@@ -154,8 +161,8 @@ export function AccessRecoveryModal({
                   {/* Right Column: Price & Fulfillment badges */}
                   <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-slate-800 pt-2 sm:pt-0">
                     <div className="text-right">
-                      <span className="text-xs text-slate-400 block">Unit Price</span>
-                      <span className="text-base font-extrabold text-emerald-400">₹{ph.priceINR}</span>
+                      <span className="text-xs text-slate-400 block font-mono">Unit Price</span>
+                      <span className="text-base font-extrabold text-emerald-400 font-mono">₹{ph.priceINR}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -176,7 +183,7 @@ export function AccessRecoveryModal({
                 {/* Personalized Alternative Brand / Generic Safety Engine Evaluation */}
                 {ph.availableAlternatives && ph.availableAlternatives.length > 0 && (
                   <div className="mt-3.5 rounded-lg border border-slate-800 bg-slate-900 p-3 space-y-2">
-                    <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider font-mono">
                       <Pill className="h-3.5 w-3.5 text-cyan-400" />
                       Alternative Brand/Generic In Stock at this Pharmacy:
                     </span>
@@ -202,18 +209,18 @@ export function AccessRecoveryModal({
                             </span>
 
                             {alt.safetyStatus === 'SAFE_EQUIVALENT' && (
-                              <span className="rounded bg-emerald-950 px-2 py-0.5 text-[10px] font-extrabold text-emerald-400 border border-emerald-800 flex items-center gap-1">
-                                <ShieldCheck className="h-3 w-3" /> 🟢 SAFE EQUIVALENT ({alt.safetyScore}%)
+                              <span className="rounded bg-emerald-950 px-2 py-0.5 text-[10px] font-extrabold text-emerald-400 border border-emerald-800 flex items-center gap-1 font-mono">
+                                <ShieldCheck className="h-3 w-3" /> SAFE EQUIVALENT ({alt.safetyScore}%)
                               </span>
                             )}
                             {alt.safetyStatus === 'REQUIRES_PHARMACIST_CONSULT' && (
-                              <span className="rounded bg-amber-950 px-2 py-0.5 text-[10px] font-extrabold text-amber-400 border border-amber-800 flex items-center gap-1">
-                                <AlertTriangle className="h-3 w-3" /> 🟡 CONSULT PHARMACIST ({alt.safetyScore}%)
+                              <span className="rounded bg-amber-950 px-2 py-0.5 text-[10px] font-extrabold text-amber-400 border border-amber-800 flex items-center gap-1 font-mono">
+                                <AlertTriangle className="h-3 w-3" /> CONSULT PHARMACIST ({alt.safetyScore}%)
                               </span>
                             )}
                             {alt.safetyStatus === 'CONTRAINDICATED_SUBSTITUTE' && (
-                              <span className="rounded bg-rose-950 px-2 py-0.5 text-[10px] font-extrabold text-rose-400 border border-rose-800 flex items-center gap-1">
-                                <ShieldX className="h-3 w-3" /> 🔴 CONTRAINDICATED ({alt.safetyScore}%)
+                              <span className="rounded bg-rose-950 px-2 py-0.5 text-[10px] font-extrabold text-rose-400 border border-rose-800 flex items-center gap-1 font-mono">
+                                <ShieldX className="h-3 w-3" /> CONTRAINDICATED ({alt.safetyScore}%)
                               </span>
                             )}
                           </div>
@@ -246,7 +253,7 @@ export function AccessRecoveryModal({
                 <button
                   onClick={handleReserveStock}
                   disabled={isReserving}
-                  className="flex items-center gap-1.5 rounded-lg border border-purple-800 bg-purple-950 px-3 py-2 text-xs font-semibold text-purple-300 hover:bg-purple-900"
+                  className="flex items-center gap-1.5 rounded-lg border border-purple-800 bg-purple-950 px-3 py-2 text-xs font-semibold text-purple-300 hover:bg-purple-900 font-mono"
                 >
                   <Lock className="h-3.5 w-3.5 text-purple-400" />
                   {patient.activeReservation?.pharmacyId === selectedPharmacy.id ? 'Hold Active (30m)' : 'Hold Stock (30m)'}
@@ -307,7 +314,7 @@ export function AccessRecoveryModal({
             </p>
             <button
               onClick={handleConfirmAcquired}
-              className="rounded-lg bg-cyan-500 px-4 py-1.5 text-xs font-extrabold text-slate-950 hover:bg-cyan-400"
+              className="rounded-lg bg-cyan-500 px-4 py-1.5 text-xs font-extrabold text-slate-950 hover:bg-cyan-400 font-mono"
             >
               Simulate Photo Match (100% Brand Verification)
             </button>

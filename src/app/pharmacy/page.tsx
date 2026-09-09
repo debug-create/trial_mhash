@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import { useVanishingDose } from '@/context/VanishingDoseContext';
 import { ConfidenceBadge } from '@/components/ConfidenceBadge';
-import { Store, ShieldCheck, RefreshCw, MapPin, Truck, ShoppingBag, Lock, Clock, CheckCircle2 } from 'lucide-react';
+import { Store, ShieldCheck, RefreshCw, MapPin, Truck, ShoppingBag, Lock, Clock, CheckCircle2, Radio } from 'lucide-react';
 
 export default function PharmacyPage() {
-  const { pharmacies, reservations, verifyPharmacyStock } = useVanishingDose();
+  const { pharmacies, reservations, verifyPharmacyStock, patients } = useVanishingDose();
   const [editingPrice, setEditingPrice] = useState<{ [key: string]: number }>({});
   const [updatedSuccessId, setUpdatedSuccessId] = useState<string | null>(null);
+
+  const gapPatients = patients.filter((p) => p.clinicalState === 'COVERAGE_GAP');
 
   const handleVerify = (pharmacyId: string) => {
     const customPrice = editingPrice[pharmacyId];
@@ -34,11 +36,24 @@ export default function PharmacyPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 border border-slate-800 text-xs text-slate-300">
+          <div className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 border border-slate-800 text-xs text-slate-300 font-mono">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
             <span>Active Partners: <strong className="text-white">{pharmacies.length} Stores Connected</strong></span>
           </div>
         </div>
+
+        {/* Coverage Gap Warning Banner */}
+        {gapPatients.length > 0 && (
+          <div className="rounded-2xl border border-purple-800/80 bg-purple-950/20 p-5 space-y-2">
+            <div className="flex items-center gap-2 text-purple-300 font-bold text-sm font-mono">
+              <Radio className="w-4 h-4 text-purple-400 animate-pulse" />
+              <span>Coverage Gap Alert: {gapPatients.length} Patient Stream(s) Disconnected</span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed font-mono">
+              Pharmacy claims feeds for <strong>{gapPatients.map((g) => g.name).join(', ')}</strong> are stale (&gt;24h) or wearable sensors offline. The system explicitly abstains from risk scoring and highlights these cases for feed verification.
+            </p>
+          </div>
+        )}
 
         {/* Info Banner */}
         <div className="rounded-2xl border border-emerald-800/80 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 p-5 space-y-2">
@@ -52,7 +67,7 @@ export default function PharmacyPage() {
         {reservations.length > 0 && (
           <div className="rounded-2xl border border-purple-800/80 bg-purple-950/20 p-6 space-y-4 shadow-lg">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-purple-300 flex items-center gap-2 uppercase tracking-wider">
+              <h3 className="text-sm font-bold text-purple-300 flex items-center gap-2 uppercase tracking-wider font-mono">
                 <Lock className="h-4 w-4 text-purple-400" />
                 Active 30-Minute Patient Stock Reservation Locks ({reservations.length})
               </h3>
@@ -61,12 +76,12 @@ export default function PharmacyPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {reservations.map((res) => (
-                <div key={res.id} className="rounded-xl border border-purple-800/60 bg-slate-900 p-4 space-y-1 text-xs">
+                <div key={res.id} className="rounded-xl border border-purple-800/60 bg-slate-900 p-4 space-y-1 text-xs font-mono">
                   <div className="flex items-center justify-between text-slate-200 font-bold">
                     <span>{res.pharmacyName}</span>
-                    <span className="text-emerald-400 font-mono">HOLD ACTIVE</span>
+                    <span className="text-emerald-400">HOLD ACTIVE</span>
                   </div>
-                  <p className="text-slate-400">
+                  <p className="text-slate-400 font-sans">
                     Patient: <strong className="text-white">{res.patientName}</strong> • Item: <strong className="text-cyan-400">{res.medicationName}</strong>
                   </p>
                   <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-800">
@@ -96,7 +111,7 @@ export default function PharmacyPage() {
                       <MapPin className="h-3.5 w-3.5 text-slate-500" />
                       {ph.address}
                     </p>
-                    <span className="text-[11px] text-cyan-400 flex items-center gap-1 mt-1">
+                    <span className="text-[11px] text-cyan-400 flex items-center gap-1 mt-1 font-mono">
                       <Clock className="h-3 w-3" /> {ph.storeHours} • {ph.transitDelayMins}m transit
                     </span>
                   </div>
@@ -105,7 +120,7 @@ export default function PharmacyPage() {
 
                 <div className="grid grid-cols-2 gap-3 border-y border-slate-800 py-3 text-xs">
                   <div>
-                    <span className="text-slate-400 block">Unit Price (₹)</span>
+                    <span className="text-slate-400 block font-mono">Unit Price (₹)</span>
                     <input
                       type="number"
                       value={editingPrice[ph.id] !== undefined ? editingPrice[ph.id] : ph.priceINR}
@@ -117,7 +132,7 @@ export default function PharmacyPage() {
                   </div>
 
                   <div>
-                    <span className="text-slate-400 block">Fulfillment Options</span>
+                    <span className="text-slate-400 block font-mono">Fulfillment Options</span>
                     <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                       {ph.supportsDelivery && (
                         <span className="flex items-center gap-1 rounded bg-blue-950 px-1.5 py-0.5 text-[10px] font-medium text-blue-300 border border-blue-800">
@@ -133,8 +148,8 @@ export default function PharmacyPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 pt-1">
-                  <span className="text-[11px] text-slate-400 font-mono">
+                <div className="flex items-center justify-between gap-3 pt-1 font-mono">
+                  <span className="text-[11px] text-slate-400">
                     Source: {ph.verificationSource.replace('_', ' ')}
                   </span>
 

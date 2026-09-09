@@ -2,15 +2,16 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Layers, ShieldCheck, Activity, Cpu, RefreshCw, CheckCircle2, ArrowRight, User, Stethoscope, Store, HelpCircle } from 'lucide-react';
+import { ShieldCheck, Activity, Cpu, ArrowRight, User, Stethoscope, Store, Sparkles, CheckCircle2, AlertTriangle, Eye, Radio, GitCommit, BarChart3 } from 'lucide-react';
 import { useVanishingDose } from '@/context/VanishingDoseContext';
 
 export default function Home() {
   const { patients } = useVanishingDose();
 
-  const redCount = patients.filter((p) => p.riskStatus === 'RED').length;
-  const orangeCount = patients.filter((p) => p.riskStatus === 'ORANGE').length;
-  const greenCount = patients.filter((p) => p.riskStatus === 'GREEN').length;
+  const reviewCount = patients.filter((p) => p.clinicalState === 'NEEDS_REVIEW').length;
+  const watchCount = patients.filter((p) => p.clinicalState === 'DRIFT').length;
+  const gapCount = patients.filter((p) => p.clinicalState === 'COVERAGE_GAP').length;
+  const stableCount = patients.filter((p) => p.clinicalState === 'NORMAL' || p.clinicalState === 'RECOVERED').length;
 
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-8 sm:px-6 lg:px-8">
@@ -20,23 +21,37 @@ export default function Home() {
           <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl" />
           <div className="absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-indigo-500/10 blur-3xl" />
 
-          <div className="relative z-10 max-w-3xl space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-950/60 px-3.5 py-1 text-xs font-semibold text-cyan-400">
+          <div className="relative z-10 max-w-4xl space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-950/60 px-3.5 py-1 text-xs font-semibold text-cyan-400 font-mono">
               <Activity className="h-3.5 w-3.5" />
-              <span>THE VANISHING DOSE ARCHITECTURE</span>
+              <span>VANISHING DOSE v2 SYSTEM SPECIFICATION</span>
             </div>
 
             <h1 className="font-extrabold text-3xl sm:text-5xl text-white tracking-tight leading-tight">
-              From Missed Dose to <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">Resolved Dose.</span>
+              Detecting Medication Non-Adherence <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">Without Asking.</span>
             </h1>
 
             <p className="text-base sm:text-lg text-slate-300 leading-relaxed">
-              Existing medication systems largely stop at reminding, detecting, or predicting non-adherence. <strong className="text-white">Vanishing Dose closes the loop:</strong> it reconstructs why an intended dose failed, selects a cause-specific recovery path—from contextual intervention to medication access—and verifies whether treatment execution was actually restored.
+              Detect adherence drift early using surrounding passive telemetry streams—pharmacy refills, wearable biometrics, and eMAR history. <strong className="text-white">Detection never asks the patient anything.</strong> Clinicians review actionable evidence graphs and optionally initiate follow-up confirmation.
             </p>
 
-            {/* Quote Pitch Box */}
-            <div className="rounded-xl border border-cyan-800/60 bg-cyan-950/30 p-4 text-xs sm:text-sm text-cyan-200 italic font-mono">
-              &quot;Don&apos;t just detect the vanishing dose. Explain where it vanished, remove the obstacle, and prove that it came back.&quot;
+            {/* The Two Headlines Box */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="rounded-xl border border-cyan-800/60 bg-cyan-950/40 p-4 space-y-1">
+                <div className="text-xs font-bold text-cyan-400 font-mono uppercase tracking-wider">HEADLINE 1</div>
+                <div className="text-sm font-semibold text-cyan-100">
+                  &quot;Detect the drift before it becomes a pattern.&quot;
+                </div>
+                <p className="text-xs text-cyan-300/80">Early-warning clinical signal synthesis, not retrospective reporting.</p>
+              </div>
+
+              <div className="rounded-xl border border-purple-800/60 bg-purple-950/40 p-4 space-y-1">
+                <div className="text-xs font-bold text-purple-400 font-mono uppercase tracking-wider">HEADLINE 2</div>
+                <div className="text-sm font-semibold text-purple-100">
+                  &quot;Never confuse silence with stability.&quot;
+                </div>
+                <p className="text-xs text-purple-300/80">Missing/stale feeds trigger explicit COVERAGE GAP state, never low risk.</p>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-4 pt-2">
@@ -59,102 +74,103 @@ export default function Home() {
           </div>
         </div>
 
-        {/* The 3 Core USPs */}
+        {/* 5-State System & Cohort Counters */}
         <div className="space-y-4">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-white">The Three Differentiating USP Layers</h2>
-            <p className="text-xs text-slate-400">Built directly on top of the foundational prescription & reminder problem statement</p>
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                Clinical 5-State System
+                <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+                  No Traffic Light Labels
+                </span>
+              </h2>
+              <p className="text-xs text-slate-400">
+                Replaces red/amber/green alerts with precise clinical status labels to prevent CDS alert fatigue.
+              </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* USP 1 */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 space-y-4 shadow-lg hover:border-slate-700 transition-all">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-950 border border-cyan-800 text-cyan-400 font-extrabold text-lg">
-                01
-              </div>
-              <h3 className="text-lg font-bold text-white">Execution Forensics</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Reconstructs why a dose diverged from its intended execution using surrounding temporal evidence graph (refill history, inventory logs, wearable sleep/timezone shifts, and post-dose symptom spikes) <strong className="text-slate-200">without manual patient self-report</strong>.
-              </p>
-              <div className="rounded-lg bg-slate-950 p-2.5 text-[11px] font-mono text-cyan-300 border border-slate-800">
-                Reasoning Output: ACCESS_EXHAUSTION (94% Certainty)
-              </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="rounded-xl border border-rose-800/60 bg-rose-950/30 p-4 space-y-1">
+              <span className="text-xs font-bold font-mono text-rose-400 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 text-rose-400 animate-pulse" />
+                REVIEW NOW
+              </span>
+              <div className="text-2xl font-extrabold text-white font-mono">{reviewCount}</div>
+              <p className="text-[11px] text-slate-400">Corroborated persistent drift requiring review</p>
             </div>
 
-            {/* USP 2 */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 space-y-4 shadow-lg hover:border-slate-700 transition-all">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-950 border border-amber-800 text-amber-400 font-extrabold text-lg">
-                02
-              </div>
-              <h3 className="text-lg font-bold text-white">Failure-Specific Recovery</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Routes each detected failure to the appropriate resolution path instead of sending another generic reminder. When access is the cause, launches the <strong className="text-slate-200">Medication Access Network</strong> with availability confidence ratings, pricing, and generic safety checks.
-              </p>
-              <div className="rounded-lg bg-slate-950 p-2.5 text-[11px] font-mono text-amber-300 border border-slate-800">
-                Intervention: Verified Pharmacy Access (4 Candidates)
-              </div>
+            <div className="rounded-xl border border-amber-800/60 bg-amber-950/30 p-4 space-y-1">
+              <span className="text-xs font-bold font-mono text-amber-400 flex items-center gap-1.5">
+                <Eye className="w-4 h-4 text-amber-400" />
+                WATCH
+              </span>
+              <div className="text-2xl font-extrabold text-white font-mono">{watchCount}</div>
+              <p className="text-[11px] text-slate-400">Early deviation detected; monitoring</p>
             </div>
 
-            {/* USP 3 */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 space-y-4 shadow-lg hover:border-slate-700 transition-all">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-950 border border-emerald-800 text-emerald-400 font-extrabold text-lg">
-                03
-              </div>
-              <h3 className="text-lg font-bold text-white">Closed-Loop Verification</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Tracks the complete lifecycle: <strong className="text-slate-200">Problem $\rightarrow$ Cause $\rightarrow$ Intervention $\rightarrow$ Outcome</strong>. Verifies whether the recovery action actually restored physical stock and treatment execution.
-              </p>
-              <div className="rounded-lg bg-slate-950 p-2.5 text-[11px] font-mono text-emerald-300 border border-slate-800">
-                Ledger Status: VERIFIED_SUCCESS (+30 Stock Restored)
-              </div>
+            <div className="rounded-xl border border-purple-800/60 bg-purple-950/30 p-4 space-y-1">
+              <span className="text-xs font-bold font-mono text-purple-400 flex items-center gap-1.5">
+                <Radio className="w-4 h-4 text-purple-400" />
+                COVERAGE GAP
+              </span>
+              <div className="text-2xl font-extrabold text-white font-mono">{gapCount}</div>
+              <p className="text-[11px] text-slate-400">Feed stale or wearable sensor offline</p>
+            </div>
+
+            <div className="rounded-xl border border-slate-800 bg-slate-900/90 p-4 space-y-1">
+              <span className="text-xs font-bold font-mono text-cyan-400 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                STABLE / RECOVERED
+              </span>
+              <div className="text-2xl font-extrabold text-white font-mono">{stableCount}</div>
+              <p className="text-[11px] text-slate-400">Execution within baseline variance</p>
             </div>
           </div>
         </div>
 
-        {/* Live Closed-Loop Architecture Diagram */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 sm:p-8 space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-            <div>
-              <h3 className="text-lg font-bold text-white">Closed-Loop Data Engine & State Flow</h3>
-              <p className="text-xs text-slate-400">Live operational state across all active patient cohorts</p>
-            </div>
-            <div className="flex items-center gap-3 text-xs font-semibold">
-              <span className="flex items-center gap-1 text-rose-400">
-                <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" /> {redCount} Red (Access Failure)
-              </span>
-              <span className="flex items-center gap-1 text-amber-400">
-                <span className="h-2 w-2 rounded-full bg-amber-500" /> {orangeCount} Orange (Side-Effect/Routine)
-              </span>
-              <span className="flex items-center gap-1 text-emerald-400">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" /> {greenCount} Green (Restored/Stable)
-              </span>
-            </div>
+        {/* Core Architecture Split: Layer A vs Layer B */}
+        <div className="space-y-4">
+          <div className="text-center space-y-1">
+            <h2 className="text-2xl font-bold text-white">The Core Correction: Layer A vs Layer B Split</h2>
+            <p className="text-xs text-slate-400">SHAP explains the risk score (Layer A); causality is evaluated separately via explicit rule graphs (Layer B).</p>
           </div>
 
-          {/* Interactive Flow Visualizer */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-            <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-2">
-              <span className="text-[10px] font-mono font-bold text-slate-500">STAGE 1 — DETECT</span>
-              <h4 className="font-bold text-sm text-slate-200">Execution Divergence</h4>
-              <p className="text-[11px] text-slate-400">8:00 AM Dose Unconfirmed. Reminder timeout.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Layer A Card */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 space-y-4 shadow-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono px-2.5 py-1 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
+                  LAYER A — ADHERENCE DRIFT RISK
+                </span>
+                <BarChart3 className="w-5 h-5 text-cyan-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Calibrated Logistic Regression</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Trained on a synthetic cohort of ~200 patients with noisy labels. Uses <strong className="text-slate-200">Platt Scaling calibration ($ECE &lt; 0.05$)</strong> and SHAP to explain feature attribution towards the <em>risk score</em> (e.g., Refill delay $+31\%$, Dose-time variance $+22\%$). Deployed in TypeScript for live browser inference.
+              </p>
+              <div className="rounded-lg bg-slate-950 p-3 text-xs font-mono text-cyan-300 border border-slate-800 space-y-1">
+                <div>Model: Logistic Regression + Platt Scaling</div>
+                <div>PR-AUC: 0.89 | Precision: 0.86 | ECE: 0.038</div>
+              </div>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-2">
-              <span className="text-[10px] font-mono font-bold text-cyan-400">STAGE 2 — EXPLAIN</span>
-              <h4 className="font-bold text-sm text-slate-200">Execution Forensics</h4>
-              <p className="text-[11px] text-slate-400">Stock estimate = 0. Refill overdue 2 days.</p>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-2">
-              <span className="text-[10px] font-mono font-bold text-amber-400">STAGE 3 — RESOLVE</span>
-              <h4 className="font-bold text-sm text-slate-200">Access Recovery</h4>
-              <p className="text-[11px] text-slate-400">4 Verified Pharmacies surfaced with price/stock.</p>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-2">
-              <span className="text-[10px] font-mono font-bold text-emerald-400">STAGE 4 — VERIFY</span>
-              <h4 className="font-bold text-sm text-slate-200">Adherence Restored</h4>
-              <p className="text-[11px] text-slate-400">Stock +30. Dose executed & logged.</p>
+            {/* Layer B Card */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 space-y-4 shadow-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono px-2.5 py-1 rounded bg-purple-950 text-purple-400 border border-purple-800">
+                  LAYER B — CAUSE & EVIDENCE MODEL
+                </span>
+                <GitCommit className="w-5 h-5 text-purple-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Explicit Rule Matrix Graph</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Determines plausible explanations (Treatment Intolerance, Access Exhaustion, Routine Disruption, Cognitive Slip) using explicit rules. Each candidate hypothesis carries <strong className="text-slate-200">supporting & contradicting evidence chains with provenance source tags</strong>. Completely non-SHAP derived.
+              </p>
+              <div className="rounded-lg bg-slate-950 p-3 text-xs font-mono text-purple-300 border border-slate-800 space-y-1">
+                <div>Output: Plausible / Unlikely / High Certainty</div>
+                <div>Provenance Tags: Observed (PBM API) vs Derived</div>
+              </div>
             </div>
           </div>
         </div>
@@ -173,7 +189,7 @@ export default function Home() {
             </div>
             <h4 className="text-base font-bold text-white">Patient App Interface</h4>
             <p className="text-xs text-slate-400">
-              Interactive dose tracker, pre-empted depletion alerts, and direct Medication Access Recovery flow.
+              Passive telemetry monitoring, clinician follow-up confirmation workflow, and cause-specific access recovery drawer.
             </p>
           </Link>
 
@@ -189,7 +205,7 @@ export default function Home() {
             </div>
             <h4 className="text-base font-bold text-white">Doctor Command Center</h4>
             <p className="text-xs text-slate-400">
-              Patient risk triage (🔴/🟠/🟢), multi-signal forensic timelines, uncertainty metrics, and recovery audits.
+              Leverage priority queue ranking, 3D Context Explorer, Layer A SHAP waterfall, Layer B hypothesis tree, and HL7 FHIR export.
             </p>
           </Link>
 
@@ -203,9 +219,9 @@ export default function Home() {
               </div>
               <ArrowRight className="h-5 w-5 text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
             </div>
-            <h4 className="text-base font-bold text-white">Pharmacy Partner Portal</h4>
+            <h4 className="text-base font-bold text-white">Pharmacy Partner Network</h4>
             <p className="text-xs text-slate-400">
-              Live stock verification, price updates, and inventory API integration for high confidence availability.
+              Direct inventory API sync verification, 30-minute stock hold queue, and coverage gap alerts.
             </p>
           </Link>
         </div>

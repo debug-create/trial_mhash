@@ -1,4 +1,4 @@
-import { Patient, VerificationStatus } from './types';
+import { Patient, VerificationStatus, ClinicalState, ActionLabel } from './types';
 
 export function advanceVerificationState(
   patient: Patient,
@@ -10,31 +10,32 @@ export function advanceVerificationState(
     {
       timestamp,
       action: actionDetails,
-      result: `Status transitioned to: ${nextStatus}`,
+      result: `Verification ledger updated: ${nextStatus}`,
     },
     ...patient.recoveryHistory,
   ];
 
   let updatedDoses = [...patient.doses];
   let updatedSupply = { ...patient.supply };
+  let newClinicalState: ClinicalState = patient.clinicalState;
+  let newActionLabel: ActionLabel = patient.actionLabel;
 
-  // If medication acquired, update supply and mark missed dose as RECOVERED
-  if (nextStatus === 'MEDICATION_ACQUIRED' || nextStatus === 'VERIFIED_SUCCESS') {
+  // If medication acquired, update physical stock (+30) and mark missed dose as RECOVERED
+  if (nextStatus === 'MEDICATION_ACQUIRED' || nextStatus === 'DOSE_RESTORED' || nextStatus === 'VERIFIED_SUCCESS') {
     updatedSupply.currentStock = Math.max(updatedSupply.currentStock + 30, 30);
     updatedDoses = updatedDoses.map((d) =>
       d.status === 'MISSED' ? { ...d, status: 'RECOVERED', takenAt: timestamp } : d
     );
-  }
-
-  // Update risk status based on new state
-  let newRiskStatus = patient.riskStatus;
-  if (nextStatus === 'VERIFIED_SUCCESS' || nextStatus === 'MEDICATION_ACQUIRED') {
-    newRiskStatus = 'GREEN';
+    newClinicalState = 'RECOVERED';
+    newActionLabel = 'RECOVERED';
+  } else if (nextStatus === 'STOCK_RESERVED') {
+    newActionLabel = 'WATCH';
   }
 
   return {
     ...patient,
-    riskStatus: newRiskStatus,
+    clinicalState: newClinicalState,
+    actionLabel: newActionLabel,
     verificationStatus: nextStatus,
     supply: updatedSupply,
     doses: updatedDoses,
