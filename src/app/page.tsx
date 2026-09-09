@@ -1,413 +1,265 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Layers,
-  ShieldCheck,
-  Activity,
-  Cpu,
-  RefreshCw,
-  CheckCircle2,
-  ArrowRight,
-  User,
-  Stethoscope,
-  Store,
-  HelpCircle,
-  Zap,
-  Radio,
-  Sparkles,
-  ChevronRight,
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight, ShieldCheck, Activity, User, Stethoscope, Store, CheckCircle2 } from 'lucide-react';
 import { useVanishingDose } from '@/context/VanishingDoseContext';
 
-// Dynamic import for R3F Canvases to ensure clean SSR / static prerendering
+// Dynamic import for R3F Hero Pill Canvas without decorative particles
 const HeroPillCanvas = dynamic(
   () => import('@/components/three/HeroPillCanvas').then((mod) => mod.HeroPillCanvas),
-  { ssr: false, loading: () => <div className="h-[360px] w-full bg-slate-900/40 rounded-3xl animate-pulse flex items-center justify-center text-xs text-slate-500 font-mono">Loading 3D Canvas...</div> }
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[360px] w-full bg-slate-900/20 rounded-3xl animate-pulse flex items-center justify-center text-xs font-mono text-slate-600">
+        Loading 3D Hero Mesh...
+      </div>
+    ),
+  }
 );
-
-const PipelineNodeCanvas = dynamic(
-  () => import('@/components/three/PipelineNodeCanvas').then((mod) => mod.PipelineNodeCanvas),
-  { ssr: false, loading: () => <div className="h-[260px] w-full bg-slate-900/40 rounded-2xl animate-pulse flex items-center justify-center text-xs text-slate-500 font-mono">Loading Spatial Pipeline...</div> }
-);
-
-const STAGES = [
-  {
-    id: 0,
-    tag: 'STAGE 01 — DETECT',
-    title: 'Execution Divergence Detection',
-    subtitle: 'Identifies missing execution timestamp without waiting for patient self-report',
-    desc: 'Real-time regimen telemetry logs unconfirmed dose windows at 8:00 AM. Triggers non-intrusive surveillance without immediate alert fatigue.',
-    badgeColor: 'text-cyan-400 border-cyan-500/30 bg-cyan-950/60',
-    stat: '8:00 AM Dose Unconfirmed',
-  },
-  {
-    id: 1,
-    tag: 'STAGE 02 — EXPLAIN',
-    title: 'Temporal Evidence Forensics Engine',
-    subtitle: 'Reconstructs root cause via wearable telemetry & inventory delta graphs',
-    desc: 'Evaluates estimated pill depletion against last refill timestamp, travel timezone shifts, and post-dose symptom score spikes.',
-    badgeColor: 'text-blue-400 border-blue-500/30 bg-blue-950/60',
-    stat: 'Reasoning: ACCESS_EXHAUSTION (94% Certainty)',
-  },
-  {
-    id: 2,
-    tag: 'STAGE 03 — RESOLVE',
-    title: 'Failure-Specific Access Recovery',
-    subtitle: 'Contextual intervention routing based on root cause attribution',
-    desc: 'Surfaces nearby verified pharmacy network candidates with live stock verification, RxNorm generic safety checks, and locked 30-min holds.',
-    badgeColor: 'text-amber-400 border-amber-500/30 bg-amber-950/60',
-    stat: 'Intervention: 4 Verified Pharmacies Found',
-  },
-  {
-    id: 3,
-    tag: 'STAGE 04 — VERIFY',
-    title: 'Closed-Loop Ledger Verification',
-    subtitle: 'Proves treatment execution was physically restored',
-    desc: 'Locks physical stock acquisition (+30 Tablets) and registers dose restoration onto the immutable adherence ledger.',
-    badgeColor: 'text-emerald-400 border-emerald-500/30 bg-emerald-950/60',
-    stat: 'Ledger: VERIFIED_SUCCESS (+30 Restored)',
-  },
-];
 
 export default function Home() {
   const { patients } = useVanishingDose();
-  const [activeStage, setActiveStage] = useState(0);
 
   const redCount = patients.filter((p) => p.riskStatus === 'RED').length;
   const orangeCount = patients.filter((p) => p.riskStatus === 'ORANGE').length;
   const greenCount = patients.filter((p) => p.riskStatus === 'GREEN').length;
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-8 sm:px-6 lg:px-8 text-slate-100 selection:bg-cyan-500 selection:text-slate-950">
-      <div className="mx-auto max-w-7xl space-y-16">
-        {/* Pitch Hero Header */}
-        <section className="relative overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl p-6 sm:p-12 shadow-2xl">
-          <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-          <div className="absolute -left-20 -bottom-20 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-slate-950 font-sans">
+      {/* =========================================================================
+          SECTION 01 / 04 — IDENTITY (HERO)
+          ========================================================================= */}
+      <section className="relative min-h-[90vh] flex items-center justify-center px-6 py-20 border-b border-slate-900 overflow-hidden">
+        {/* Subtle radial ambient glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[140px] pointer-events-none" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            <div className="lg:col-span-7 space-y-6">
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-950/60 px-4 py-1.5 text-xs font-mono font-semibold text-cyan-400 backdrop-blur-md shadow-lg shadow-cyan-950/50"
-              >
-                <Radio className="h-3.5 w-3.5 animate-pulse text-cyan-400" />
-                <span>THE VANISHING DOSE ARCHITECTURE</span>
-              </motion.div>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="font-extrabold text-3xl sm:text-5xl text-white tracking-tight leading-[1.15]"
-              >
-                From Missed Dose to{' '}
-                <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                  Resolved Dose.
-                </span>
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-base sm:text-lg text-slate-300 leading-relaxed font-light"
-              >
-                Existing medication systems largely stop at reminding, detecting, or predicting non-adherence.{' '}
-                <strong className="text-white font-semibold">Vanishing Dose closes the loop:</strong> it reconstructs why an intended dose failed, selects a cause-specific recovery path—from contextual intervention to medication access—and verifies whether treatment execution was actually restored.
-              </motion.p>
-
-              {/* Quote Pitch Box */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 }}
-                className="rounded-xl border border-cyan-800/60 bg-cyan-950/30 p-4 text-xs sm:text-sm text-cyan-200 font-mono shadow-inner relative overflow-hidden group"
-              >
-                <div className="absolute inset-y-0 left-0 w-1 bg-cyan-400 group-hover:bg-cyan-300 transition-colors" />
-                <p className="pl-3 italic">
-                  &quot;Don&apos;t just detect the vanishing dose. Explain where it vanished, remove the obstacle, and prove that it came back.&quot;
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="flex flex-wrap gap-4 pt-2"
-              >
-                <Link
-                  href="/doctor"
-                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/25 hover:from-cyan-400 hover:to-blue-500 hover:shadow-cyan-400/35 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  <Stethoscope className="h-4 w-4" />
-                  Launch Doctor Command Center
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/patient"
-                  className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-6 py-3.5 text-sm font-bold text-slate-200 hover:bg-slate-700/80 hover:border-slate-600 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  <User className="h-4 w-4" />
-                  View Patient Recovery App
-                </Link>
-              </motion.div>
-            </div>
-
-            {/* 3D Interactive Capsule Canvas Column */}
-            <div className="lg:col-span-5 relative flex items-center justify-center">
-              <div className="w-full relative rounded-2xl border border-slate-800/80 bg-slate-950/60 p-2 backdrop-blur-md shadow-2xl overflow-hidden group">
-                <div className="absolute top-3 left-4 z-10 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
-                  <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-widest">
-                    Interactive WebGL Capsule Engine
-                  </span>
-                </div>
-                <HeroPillCanvas />
-                <div className="absolute bottom-3 inset-x-4 text-center pointer-events-none">
-                  <span className="text-[10px] font-mono text-slate-400 bg-slate-900/90 border border-slate-800 px-3 py-1 rounded-full">
-                    Move cursor to rotate molecular structure
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* The 3 Core USPs */}
-        <section className="space-y-6">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-xs font-mono text-cyan-400 font-bold uppercase tracking-widest">
-              Core Architectural Pillars
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">The Three Differentiating USP Layers</h2>
-            <p className="text-xs sm:text-sm text-slate-400">
-              Built directly on top of the foundational prescription & reminder problem statement
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* USP 1 */}
+        <div className="mx-auto max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+          <div className="lg:col-span-7 space-y-8">
+            {/* Numbered Section Indicator */}
             <motion.div
-              whileHover={{ y: -4 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-6 space-y-4 shadow-xl backdrop-blur-md hover:border-cyan-500/40 transition-all group"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-950/80 border border-cyan-800/80 text-cyan-400 font-mono font-extrabold text-lg group-hover:scale-110 transition-transform">
-                01
-              </div>
-              <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">
-                Execution Forensics
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-light">
-                Reconstructs why a dose diverged from its intended execution using surrounding temporal evidence graph (refill history, inventory logs, wearable sleep/timezone shifts, and post-dose symptom spikes) <strong className="text-slate-200 font-medium">without manual patient self-report</strong>.
-              </p>
-              <div className="rounded-xl bg-slate-950/90 p-3 text-[11px] font-mono text-cyan-300 border border-slate-800 shadow-inner flex items-center justify-between">
-                <span>Reasoning Output:</span>
-                <span className="font-bold text-cyan-400">ACCESS_EXHAUSTION (94%)</span>
-              </div>
-            </motion.div>
-
-            {/* USP 2 */}
-            <motion.div
-              whileHover={{ y: -4 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-6 space-y-4 shadow-xl backdrop-blur-md hover:border-amber-500/40 transition-all group"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-950/80 border border-amber-800/80 text-amber-400 font-mono font-extrabold text-lg group-hover:scale-110 transition-transform">
-                02
-              </div>
-              <h3 className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">
-                Failure-Specific Recovery
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-light">
-                Routes each detected failure to the appropriate resolution path instead of sending another generic reminder. When access is the cause, launches the <strong className="text-slate-200 font-medium">Medication Access Network</strong> with availability confidence ratings, pricing, and generic safety checks.
-              </p>
-              <div className="rounded-xl bg-slate-950/90 p-3 text-[11px] font-mono text-amber-300 border border-slate-800 shadow-inner flex items-center justify-between">
-                <span>Intervention:</span>
-                <span className="font-bold text-amber-400">4 Verified Pharmacies</span>
-              </div>
-            </motion.div>
-
-            {/* USP 3 */}
-            <motion.div
-              whileHover={{ y: -4 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              className="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-6 space-y-4 shadow-xl backdrop-blur-md hover:border-emerald-500/40 transition-all group"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-950/80 border border-emerald-800/80 text-emerald-400 font-mono font-extrabold text-lg group-hover:scale-110 transition-transform">
-                03
-              </div>
-              <h3 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors">
-                Closed-Loop Verification
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-light">
-                Tracks the complete lifecycle: <strong className="text-slate-200 font-medium">Problem &rarr; Cause &rarr; Intervention &rarr; Outcome</strong>. Verifies whether the recovery action actually restored physical stock and treatment execution.
-              </p>
-              <div className="rounded-xl bg-slate-950/90 p-3 text-[11px] font-mono text-emerald-300 border border-slate-800 shadow-inner flex items-center justify-between">
-                <span>Ledger Status:</span>
-                <span className="font-bold text-emerald-400">VERIFIED (+30 Restored)</span>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* 3D Spatial 4-Stage Pipeline Visualizer */}
-        <section className="rounded-3xl border border-slate-800/80 bg-slate-900/80 p-6 sm:p-10 space-y-8 shadow-2xl backdrop-blur-xl">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
-            <div>
-              <span className="text-xs font-mono text-cyan-400 font-bold uppercase tracking-wider">
-                Spatial Architecture Engine
-              </span>
-              <h3 className="text-xl font-extrabold text-white">4-Stage Closed-Loop Execution Pipeline</h3>
-              <p className="text-xs text-slate-400 mt-1">
-                Click any pipeline stage to inspect real-time state transformation and telemetry signals
-              </p>
-            </div>
-            <div className="flex items-center gap-3 text-xs font-semibold font-mono">
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-950/60 border border-rose-800/60 text-rose-400">
-                <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" /> {redCount} Red (Access)
-              </span>
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-800/60 text-amber-400">
-                <span className="h-2 w-2 rounded-full bg-amber-500" /> {orangeCount} Orange (Routine)
-              </span>
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-800/60 text-emerald-400">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" /> {greenCount} Green (Restored)
-              </span>
-            </div>
-          </div>
-
-          {/* 3D WebGL Pipeline Canvas */}
-          <div className="relative rounded-2xl border border-slate-800 bg-slate-950 p-2 overflow-hidden shadow-inner">
-            <PipelineNodeCanvas activeStage={activeStage} />
-          </div>
-
-          {/* Interactive Pipeline Stage Selector Tabs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {STAGES.map((s, idx) => (
-              <button
-                key={s.id}
-                onClick={() => setActiveStage(idx)}
-                className={`rounded-2xl border p-4 text-left transition-all relative overflow-hidden ${
-                  activeStage === idx
-                    ? 'border-cyan-500 bg-slate-800/90 shadow-lg ring-1 ring-cyan-500/50'
-                    : 'border-slate-800 bg-slate-950/70 hover:border-slate-700 hover:bg-slate-900/60'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${s.badgeColor}`}>
-                    {s.tag}
-                  </span>
-                  {activeStage === idx && <Sparkles className="h-4 w-4 text-cyan-400" />}
-                </div>
-                <h4 className="font-bold text-sm text-slate-100 mt-2">{s.title}</h4>
-                <p className="text-[11px] font-mono text-slate-400 mt-1 truncate">{s.stat}</p>
-              </button>
-            ))}
-          </div>
-
-          {/* Active Stage Technical Detail Card */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeStage}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="rounded-2xl border border-slate-800 bg-slate-950/90 p-6 space-y-3 font-mono text-xs shadow-inner"
+              className="flex items-center gap-3 text-xs font-mono text-cyan-400 font-semibold tracking-widest uppercase"
             >
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <span className="text-cyan-400 font-bold uppercase">{STAGES[activeStage].tag} TECHNICAL DEEP DIVE</span>
-                <span className="text-slate-500 text-[11px]">Subsystem: VanishingDoseCore</span>
-              </div>
-              <div className="space-y-2">
-                <h4 className="text-sm font-bold text-white font-sans">{STAGES[activeStage].title}</h4>
-                <p className="text-slate-300 font-sans leading-relaxed text-xs">{STAGES[activeStage].desc}</p>
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-cyan-300 flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-cyan-400 shrink-0" />
-                  <span>Telemetry State: {STAGES[activeStage].stat}</span>
-                </div>
-              </div>
+              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">01 / 04</span>
+              <span>CLOSED-LOOP CLINICAL INTELLIGENCE</span>
             </motion.div>
-          </AnimatePresence>
-        </section>
 
-        {/* Navigation Portal Cards */}
-        <section className="space-y-4">
-          <div className="text-center space-y-1">
-            <h3 className="text-xl font-extrabold text-white">Explore Role-Based Interfaces</h3>
-            <p className="text-xs text-slate-400">Step into the live multi-persona demonstration</p>
+            {/* Dominant Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-4xl sm:text-6xl xl:text-7xl font-extrabold tracking-tight text-white leading-[1.08]"
+            >
+              From Missed Dose to <span className="text-cyan-400">Resolved Dose.</span>
+            </motion.h1>
+
+            {/* Short Punchy Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-base sm:text-xl text-slate-300 font-light leading-relaxed max-w-2xl"
+            >
+              Existing systems stop at reminding or predicting non-adherence.{' '}
+              <strong className="text-white font-medium">Vanishing Dose closes the loop</strong>: reconstruct why an intended dose failed, execute cause-specific recovery, and verify treatment execution restoration.
+            </motion.p>
+
+            {/* Solid / Outline Action Buttons (Zero Gradient Gimmicks) */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-wrap gap-4 pt-2"
+            >
+              <Link
+                href="/doctor"
+                className="flex items-center gap-2 rounded-xl bg-cyan-500 px-6 py-3.5 text-sm font-bold text-slate-950 hover:bg-cyan-400 transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-cyan-950/40"
+              >
+                <Stethoscope className="h-4 w-4" />
+                Doctor Command Center
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/patient"
+                className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-6 py-3.5 text-sm font-semibold text-slate-200 hover:border-slate-700 hover:bg-slate-800 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <User className="h-4 w-4" />
+                Patient Recovery App
+              </Link>
+            </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Link
-              href="/patient"
-              className="group rounded-2xl border border-slate-800/80 bg-slate-900/80 p-6 space-y-4 hover:border-cyan-500/50 hover:bg-slate-900 transition-all shadow-lg hover:shadow-cyan-500/10"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-950 border border-cyan-800 text-cyan-400 group-hover:scale-110 transition-transform">
-                  <User className="h-6 w-6" />
-                </div>
-                <ArrowRight className="h-5 w-5 text-slate-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
-              </div>
-              <div>
-                <h4 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors">
-                  Patient Recovery App
-                </h4>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Interactive dose tracker, pre-empted depletion alerts, and direct Medication Access Recovery flow.
-                </p>
-              </div>
-            </Link>
+          {/* 3D Hero Object Column */}
+          <div className="lg:col-span-5 relative flex items-center justify-center">
+            <div className="w-full h-[380px] sm:h-[420px] rounded-3xl border border-slate-900 bg-slate-950/60 p-4 relative overflow-hidden flex items-center justify-center">
+              <HeroPillCanvas />
+            </div>
+          </div>
+        </div>
+      </section>
 
+      {/* =========================================================================
+          SECTION 02 / 04 — DETECT → EXPLAIN (FORENSICS ENGINE)
+          ========================================================================= */}
+      <section className="relative min-h-[80vh] flex items-center justify-center px-6 py-24 border-b border-slate-900 bg-slate-950">
+        <div className="mx-auto max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-6 space-y-6">
+            <div className="flex items-center gap-3 text-xs font-mono text-cyan-400 font-semibold tracking-widest uppercase">
+              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">02 / 04</span>
+              <span>EXECUTION FORENSICS ENGINE</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              Reconstruct the Cause Without Patient Self-Report.
+            </h2>
+
+            <p className="text-base sm:text-lg text-slate-300 font-light leading-relaxed">
+              When an 8:00 AM dose window passes unconfirmed, Vanishing Dose doesn&apos;t assume apathy. It reconstructs temporal telemetry graph evidence—refill logs, wearable sleep/travel shifts, and post-dose symptom score spikes—to attribute root cause automatically.
+            </p>
+
+            {/* Classification & Attribution Taxonomy Matrix */}
+            <div className="space-y-4 pt-4 font-mono text-xs">
+              <div className="text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                Attribution Taxonomy Categories:
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl border border-slate-900 bg-slate-900/60 text-slate-200">
+                  <span className="text-cyan-400 font-bold block">ACCESS_EXHAUSTION</span>
+                  <span className="text-[11px] text-slate-400 font-sans mt-0.5 block">Refill overdue, physical supply 0</span>
+                </div>
+                <div className="p-3 rounded-xl border border-slate-900 bg-slate-900/60 text-slate-200">
+                  <span className="text-amber-400 font-bold block">SIDE_EFFECT_AVOIDANCE</span>
+                  <span className="text-[11px] text-slate-400 font-sans mt-0.5 block">Post-dose symptom spike detected</span>
+                </div>
+                <div className="p-3 rounded-xl border border-slate-900 bg-slate-900/60 text-slate-200">
+                  <span className="text-indigo-400 font-bold block">ROUTINE_DISRUPTION</span>
+                  <span className="text-[11px] text-slate-400 font-sans mt-0.5 block">Wearable timezone & sleep shifts</span>
+                </div>
+                <div className="p-3 rounded-xl border border-slate-900 bg-slate-900/60 text-slate-200">
+                  <span className="text-emerald-400 font-bold block">FORGETTING</span>
+                  <span className="text-[11px] text-slate-400 font-sans mt-0.5 block">Intermittent slip with normal stock</span>
+                </div>
+              </div>
+
+              <div className="pt-2 text-slate-400 font-sans text-xs flex items-center gap-4">
+                <span>Classification Types:</span>
+                <span className="text-slate-200 font-mono font-semibold">INTERMITTENT_SLIP</span>
+                <span>•</span>
+                <span className="text-slate-200 font-mono font-semibold">STRUCTURAL_DRIFT</span>
+                <span>•</span>
+                <span className="text-slate-200 font-mono font-semibold">ACUTE_ABANDONMENT</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Single Dominant Large Stat Callout (No badge cluster clutter) */}
+          <div className="lg:col-span-6 flex items-center justify-center">
+            <div className="w-full rounded-3xl border border-slate-900 bg-slate-900/40 p-8 sm:p-12 space-y-6 text-center shadow-2xl">
+              <span className="text-xs font-mono text-slate-400 uppercase tracking-widest">
+                Forensic Attribution Certainty Rate
+              </span>
+              <div className="text-6xl sm:text-8xl font-extrabold font-mono text-cyan-400 tracking-tight">
+                94%
+              </div>
+              <p className="text-sm text-slate-300 font-light max-w-md mx-auto">
+                Evaluated against temporal telemetry graphs prior to clinician review.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          SECTION 03 / 04 — RESOLVE (FAILURE-SPECIFIC ACCESS RECOVERY)
+          ========================================================================= */}
+      <section className="relative min-h-[80vh] flex items-center justify-center px-6 py-24 border-b border-slate-900 bg-slate-950">
+        <div className="mx-auto max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-6 order-2 lg:order-1 flex items-center justify-center">
+            <div className="w-full rounded-3xl border border-slate-900 bg-slate-900/40 p-8 sm:p-12 space-y-6 text-center shadow-2xl">
+              <span className="text-xs font-mono text-slate-400 uppercase tracking-widest">
+                Medication Access Recovery Network
+              </span>
+              <div className="text-5xl sm:text-7xl font-extrabold font-mono text-white tracking-tight">
+                4 Stores
+              </div>
+              <p className="text-sm text-cyan-400 font-mono font-semibold">
+                Live Stock Verified • 30-Minute Locked Holds
+              </p>
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 order-1 lg:order-2 space-y-6">
+            <div className="flex items-center gap-3 text-xs font-mono text-cyan-400 font-semibold tracking-widest uppercase">
+              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">03 / 04</span>
+              <span>FAILURE-SPECIFIC RESOLUTION</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              Never Send Another Generic Reminder.
+            </h2>
+
+            <p className="text-base sm:text-lg text-slate-300 font-light leading-relaxed">
+              When access exhaustion is the root cause, reminders fail. Vanishing Dose immediately activates the Medication Access Recovery Network—surfacing verified nearby inventory, pricing comparisons, RxNorm generic safety checks, and 30-minute hold reservations.
+            </p>
+
+            <div className="pt-2">
+              <Link
+                href="/pharmacy"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-6 py-3.5 text-sm font-semibold text-slate-200 hover:border-slate-700 hover:bg-slate-800 transition-all"
+              >
+                <Store className="h-4 w-4" />
+                Explore Pharmacy Partner Network
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          SECTION 04 / 04 — VERIFY (CLOSED-LOOP LEDGER)
+          ========================================================================= */}
+      <section className="relative min-h-[80vh] flex items-center justify-center px-6 py-24 bg-slate-950">
+        <div className="mx-auto max-w-5xl w-full space-y-12 text-center">
+          <div className="inline-flex items-center gap-3 text-xs font-mono text-cyan-400 font-semibold tracking-widest uppercase mx-auto">
+            <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">04 / 04</span>
+            <span>CLOSED-LOOP LEDGER VERIFICATION</span>
+          </div>
+
+          <h2 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight max-w-3xl mx-auto">
+            Prove Treatment Execution Was Restored.
+          </h2>
+
+          <p className="text-base sm:text-xl text-slate-300 font-light leading-relaxed max-w-2xl mx-auto">
+            The loop is only closed when physical stock is restored (+30 Tablets) and subsequent dose telemetry confirms execution. Every event is audited on the immutable ledger.
+          </p>
+
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/doctor"
-              className="group rounded-2xl border border-slate-800/80 bg-slate-900/80 p-6 space-y-4 hover:border-blue-500/50 hover:bg-slate-900 transition-all shadow-lg hover:shadow-blue-500/10"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-500 px-8 py-4 text-base font-bold text-slate-950 hover:bg-cyan-400 transition-all shadow-xl shadow-cyan-950/50"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-950 border border-blue-800 text-blue-400 group-hover:scale-110 transition-transform">
-                  <Stethoscope className="h-6 w-6" />
-                </div>
-                <ArrowRight className="h-5 w-5 text-slate-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
-              </div>
-              <div>
-                <h4 className="text-base font-bold text-white group-hover:text-blue-300 transition-colors">
-                  Doctor Command Center
-                </h4>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Patient risk triage (🔴/🟠/🟢), multi-signal forensic timelines, uncertainty metrics, and recovery audits.
-                </p>
-              </div>
+              <Stethoscope className="h-5 w-5" />
+              Launch Doctor Command Center
+              <ArrowRight className="h-5 w-5" />
             </Link>
-
             <Link
-              href="/pharmacy"
-              className="group rounded-2xl border border-slate-800/80 bg-slate-900/80 p-6 space-y-4 hover:border-emerald-500/50 hover:bg-slate-900 transition-all shadow-lg hover:shadow-emerald-500/10"
+              href="/patient"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-8 py-4 text-base font-semibold text-slate-200 hover:border-slate-700 hover:bg-slate-800 transition-all"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-950 border border-emerald-800 text-emerald-400 group-hover:scale-110 transition-transform">
-                  <Store className="h-6 w-6" />
-                </div>
-                <ArrowRight className="h-5 w-5 text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
-              </div>
-              <div>
-                <h4 className="text-base font-bold text-white group-hover:text-emerald-300 transition-colors">
-                  Pharmacy Partner Portal
-                </h4>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Live stock verification, price updates, and inventory API integration for high confidence availability.
-                </p>
-              </div>
+              <User className="h-5 w-5" />
+              Open Patient Recovery App
             </Link>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   );
 }
+
 

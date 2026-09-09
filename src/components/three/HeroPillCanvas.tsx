@@ -67,17 +67,6 @@ function InteractivePill({ mousePos }: { mousePos: { x: number; y: number } }) {
           />
         </mesh>
 
-        {/* Outer Orbiting Data Particles */}
-        {Array.from({ length: 8 }).map((_, i) => {
-          const angle = (i / 8) * Math.PI * 2;
-          const radius = 1.6;
-          return (
-            <mesh key={i} position={[Math.cos(angle) * radius, Math.sin(angle) * radius * 0.4, Math.sin(angle) * radius]}>
-              <sphereGeometry args={[0.08, 16, 16]} />
-              <meshBasicMaterial color="#38bdf8" />
-            </mesh>
-          );
-        })}
       </Float>
     </group>
   );
